@@ -9,7 +9,7 @@
 
   <filter>
     <filter-name>everything</filter-name>
-    <filter-class>learning.di.SampleFilter</filter-class>
+    <filter-class>learning.di.testing.SampleFilter</filter-class>
   </filter>
 
   <filter-mapping>

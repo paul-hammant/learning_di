@@ -1,17 +1,17 @@
-package learning.di;
+package learning.di.testing.components;
 
 
 // This is one per Application (one per tomcat-process)
-public class A {
+public class Promotions {
     private static int REF = 1;
     private int inst;
 
-    public A() {
+    public Promotions() {
         inst = REF++;
     }
 
     @Override
     public String toString() {
-        return "A: " + inst;
+        return "Promotions# " + inst;
     }
 }

@@ -39,26 +39,50 @@ public class IntegrationTest {
         assertThat(execution.getStatusCode(), equalTo(404));
     }
 
-   @Test
+    @Test
     public void applicationsSessionsAndRequestScopesShouldWorkAsExpected() throws IOException {
 
+        String INVARIANT_INVENTORY = "Inventory# 1, contents: [TV, iMac, Washer, InkJet Printer]";
+
+
         // First request - making a session
-        HttpResponse execution = makeRequest("/C/aWebMappedMethod.txt?zipCode=12345").execute();
-
-        assertThat(execution.parseAs(String.class), equalTo("Foo{c='A: 1, B: 1\nC: 1', zipCode=12345}"));
-
-        String jSessionId = getJSessionID(execution);
+        HttpResponse response = makeRequest("/Cart/addTo.txt?item=TV").execute();
+        assertThat(response.parseAs(String.class), equalTo("OK"));
+        String jSessionId = getJSessionID(response);
 
         // Second request - reusing SAME session (via cookie)
-        HttpRequest httpRequest = makeRequest("/C/aWebMappedMethod.txt?zipCode=67890");
-        httpRequest.setHeaders(new HttpHeaders().set("Cookie", asList(jSessionId)));
-        execution = httpRequest.execute();
+        HttpRequest request = makeRequest("/Cart/addTo.txt?item=iMac");
+        request.setHeaders(new HttpHeaders().set("Cookie", asList(jSessionId)));
+        response = request.execute();
+        assertThat(response.parseAs(String.class), equalTo("OK"));
 
-        assertThat(execution.parseAs(String.class), equalTo("Foo{c='A: 1, B: 1\nC: 2', zipCode=67890}"));
+        request = makeRequest("/Cart/addTo.txt?item=Socks");
+        request.setHeaders(new HttpHeaders().set("Cookie", asList(jSessionId)));
+        response = request.execute();
+        assertThat(response.parseAs(String.class), equalTo("Not In Inventory"));
 
-        // Third request - new session
-        execution = makeRequest("/C/aWebMappedMethod.txt?zipCode=2468").execute();
-        assertThat(execution.parseAs(String.class), equalTo("Foo{c='A: 1, B: 2\nC: 3', zipCode=2468}"));
+        request = makeRequest("/Checkout/calculateSalesTax.txt?zipCode=12345");
+        request.setHeaders(new HttpHeaders().set("Cookie", asList(jSessionId)));
+        response = request.execute();
+        assertThat(response.parseAs(String.class), equalTo("SalesTax{cart: Cart# 1, Inventory: (" + INVARIANT_INVENTORY + "), contents: [TV, iMac], order: Order# 1, zipCode:12345, taxAmountCents:875}"));
+
+        request = makeRequest("/Checkout/calculateSalesTax.txt?zipCode=67890");
+        request.setHeaders(new HttpHeaders().set("Cookie", asList(jSessionId)));
+        response = request.execute();
+        assertThat(response.parseAs(String.class), equalTo("SalesTax{cart: Cart# 1, Inventory: (" + INVARIANT_INVENTORY + "), contents: [TV, iMac], order: Order# 1, zipCode:67890, taxAmountCents:875}"));
+
+        request = makeRequest("/Checkout/cartContents.txt");
+        request.setHeaders(new HttpHeaders().set("Cookie", asList(jSessionId)));
+        response = request.execute();
+        assertThat(response.parseAs(String.class), equalTo("CartContents{cart=Cart# 1, Inventory: (" + INVARIANT_INVENTORY + "), contents: [TV, iMac], order=Order# 1, upSell=UpSell# 1, item: InkJet Printer, Cart: (Cart# 1, Inventory: (" + INVARIANT_INVENTORY + "), contents: [TV, iMac])}"));
+
+        // new session
+        response = makeRequest("/Checkout/calculateSalesTax.txt?zipCode=24680").execute();
+        assertThat(response.parseAs(String.class), equalTo("SalesTax{cart: Cart# 2, Inventory: (" + INVARIANT_INVENTORY + "), contents: [], order: Order# 2, zipCode:24680, taxAmountCents:875}"));
+
+        // another new session
+        response = makeRequest("/Checkout/cartContents.txt").execute();
+        assertThat(response.parseAs(String.class), equalTo("CartContents{cart=Cart# 3, Inventory: (" + INVARIANT_INVENTORY + "), contents: [], order=Order# 3, upSell=UpSell# 2, item: iMac, Cart: (Cart# 3, Inventory: (" + INVARIANT_INVENTORY + "), contents: [])}"));
 
     }
 

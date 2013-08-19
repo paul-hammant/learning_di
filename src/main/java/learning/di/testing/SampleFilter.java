@@ -77,7 +77,16 @@ public class SampleFilter implements Filter {
             return;
         }
 
-        // Servlet Container could well serialize the session scoped objects:
+        if (uri.startsWith(".html")) {
+            // todo
+        }
+        if (uri.startsWith(".json")) {
+            // todo
+        }
+        if (uri.startsWith(".xml")) {
+            // todo
+        }
+            // Servlet Container could well serialize the session scoped objects:
         // best not to do that where application scoped objects are member variables.
         for (ApplicationInjection applicationInjection : sessionCompsInjectedInto) {
             applicationInjection.unInject();

@@ -16,8 +16,8 @@ public class Generator {
 
         // Register Application Scoped Comps
 
-        g.registerAppScopeComponent(Inventory.class.getName());
-        g.registerAppScopeComponent(Promotions.class.getName());
+        g.registerAppScopeComponent(Inventory.class);
+        g.registerAppScopeComponent(Promotions.class);
 
         // Register Session Scoped Comps
 
@@ -33,13 +33,16 @@ public class Generator {
 
     }
 
-    private void registerAppScopeComponent(String name) {
+    public void registerAppScopeComponent(Class type) {
+        if (type == null) {
+            throw new IllegalArgumentException("parameter to class may not be null");
+        }
     }
 
-    private void registerSessionScopeComponent(String name) {
+    public void registerSessionScopeComponent(String name) {
     }
 
-    private void registerRequestScopeComponent(String name) {
+    public void registerRequestScopeComponent(String name) {
     }
 
 }

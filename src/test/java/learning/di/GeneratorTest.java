@@ -6,6 +6,7 @@ import learning.di.testing.components.UpSell;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNotNull;
@@ -32,7 +33,7 @@ public class GeneratorTest {
 
         generator.registerAppScopeComponent(UpSell.class);
         generator.registerAppScopeComponent(Cart.class);
-        assertTrue(generator.generate());
+        generator.generate();
     }
 
     @Test
@@ -40,8 +41,13 @@ public class GeneratorTest {
 
         Generator generator = new Generator();
 
+
         generator.registerAppScopeComponent(UpSell.class);
-        assertFalse(generator.generate());
+        try {
+            generator.generate();
+        } catch (Exception e) {
+            assertEquals(e.getMessage(), "Component type:learning.di.testing.components.UpSell needs learning.di.testing.components.Cart to be injected, but does not have it.");
+        }
     }
 
     @Test

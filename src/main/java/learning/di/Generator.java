@@ -52,18 +52,20 @@ public class Generator {
     public void registerRequestScopeComponent(String name) {
     }
 
-    public boolean generate() {
+    public void generate() {
+        verifyComponentsHaveInjectables();
+    }
+
+    private void verifyComponentsHaveInjectables() {
         for (int classes = 0; classes < appScopedComponents.size(); classes++) {
             Class clazz = appScopedComponents.get(classes);
             Class[] parameterTypes = clazz.getConstructors()[0].getParameterTypes();
-            for (int i = 0; i < parameterTypes.length; i++) {
-                Class parameterType = parameterTypes[i];
+            for (Class parameterType : parameterTypes) {
                 if (!appScopedComponents.contains(parameterType)) {
-                    return false;
+                    throw new RuntimeException("Component type:" + clazz.getName() + " needs " + parameterType.getName() + " to be injected, but does not have it.");
                 }
             }
 
         }
-        return true;
     }
 }

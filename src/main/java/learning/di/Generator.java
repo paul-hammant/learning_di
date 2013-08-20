@@ -1,4 +1,4 @@
-package learning.di.testing;
+package learning.di;
 
 import learning.di.testing.components.Cart;
 import learning.di.testing.components.Checkout;
@@ -7,7 +7,12 @@ import learning.di.testing.components.Order;
 import learning.di.testing.components.Promotions;
 import learning.di.testing.components.UpSell;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Generator {
+
+    private List<Class> appScopedComponents = new ArrayList<Class>();
 
     // to delete ...
     public static void main(String[] args) {
@@ -37,6 +42,8 @@ public class Generator {
         if (type == null) {
             throw new IllegalArgumentException("parameter to class may not be null");
         }
+
+        appScopedComponents.add(type);
     }
 
     public void registerSessionScopeComponent(String name) {
@@ -45,4 +52,18 @@ public class Generator {
     public void registerRequestScopeComponent(String name) {
     }
 
+    public boolean generate() {
+        for (int classes = 0; classes < appScopedComponents.size(); classes++) {
+            Class clazz = appScopedComponents.get(classes);
+            Class[] parameterTypes = clazz.getConstructors()[0].getParameterTypes();
+            for (int i = 0; i < parameterTypes.length; i++) {
+                Class parameterType = parameterTypes[i];
+                if (!appScopedComponents.contains(parameterType)) {
+                    return false;
+                }
+            }
+
+        }
+        return true;
+    }
 }
